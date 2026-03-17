@@ -16,6 +16,7 @@ util\GradingUtil.class
 dao\GradeDAO.class
 model\Major.class
 dao\UserDAO.class
+controller\UserServlet.class
 dao\SemesterDAO.class
 controller\ClassStudentServlet.class
 controller\ProfileServlet.class
@@ -28,7 +29,6 @@ dao\DashboardDAO.class
 dao\ReportDAO.class
 controller\StudentServlet.class
 util\DBContext.class
-controller\admin\UserServlet.class
 dao\ClassDAO.class
 controller\MyClassServlet.class
 controller\HomeServlet.class

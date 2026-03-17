@@ -11,7 +11,7 @@ import java.util.List;
 public class UserDAO {
 
     public User checkLogin(String username, String hashedPassword) {
-        String sql = "SELECT id, username, full_name, email, role_id FROM Users WHERE username = ? AND password = ?";
+        String sql = "SELECT id, username, full_name, role FROM Users WHERE username = ? AND password = ?";
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -20,17 +20,24 @@ public class UserDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    int roleId = 2; // Mặc định là TEACHER
+                    String role = rs.getString("role");
+                    if ("ADMIN".equalsIgnoreCase(role)) {
+                        roleId = 1;
+                    }
+                    
                     return new User(
                             rs.getInt("id"),
                             rs.getString("username"),
                             rs.getString("full_name"),
-                            rs.getString("email"),
-                            rs.getInt("role_id")
+                            null, // email không có trong database
+                            roleId
                     );
                 }
             }
         } catch (Exception e) {
             System.out.println("Lỗi đăng nhập: " + e.getMessage());
+            e.printStackTrace();
         }
         return null; // Trả về null nếu sai thông tin hoặc có lỗi
     }
@@ -65,11 +72,16 @@ public class UserDAO {
     // =======================================================
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
-        String sql = "SELECT * FROM Users ORDER BY role_id ASC, id DESC";
+        String sql = "SELECT id, username, full_name, role FROM Users ORDER BY id DESC";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
+                int roleId = 2; // Mặc định là TEACHER
+                String role = rs.getString("role");
+                if ("ADMIN".equalsIgnoreCase(role)) {
+                    roleId = 1;
+                }
                 list.add(new User(rs.getInt("id"), rs.getString("username"),
-                        rs.getString("full_name"), rs.getString("email"), rs.getInt("role_id")));
+                        rs.getString("full_name"), null, roleId));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -78,13 +90,18 @@ public class UserDAO {
     }
 
     public User getUserById(int id) {
-        String sql = "SELECT * FROM Users WHERE id = ?";
+        String sql = "SELECT id, username, full_name, role FROM Users WHERE id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    int roleId = 2; // Mặc định là TEACHER
+                    String role = rs.getString("role");
+                    if ("ADMIN".equalsIgnoreCase(role)) {
+                        roleId = 1;
+                    }
                     return new User(rs.getInt("id"), rs.getString("username"),
-                            rs.getString("full_name"), rs.getString("email"), rs.getInt("role_id"));
+                            rs.getString("full_name"), null, roleId);
                 }
             }
         } catch (Exception e) {
@@ -109,29 +126,28 @@ public class UserDAO {
 
     // Khi tạo mới, Admin cấp luôn mật khẩu mặc định đã được Hash MD5
     public boolean insertUser(User u, String hashedDefaultPassword) {
-        // Chỉ dùng đúng 5 cột cơ bản này
-        String sql = "INSERT INTO Users (username, password, full_name, email, role_id) VALUES (?, ?, ?, ?, ?)";
+        String role = (u.getRoleId() == 1) ? "ADMIN" : "TEACHER";
+        String sql = "INSERT INTO Users (username, password, full_name, role) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, u.getUsername());
             ps.setString(2, hashedDefaultPassword);
             ps.setString(3, u.getFullName());
-            ps.setString(4, u.getEmail());
-            ps.setInt(5, u.getRoleId());
+            ps.setString(4, role);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            System.out.println("🚨 LỖI INSERT DATABASE: " + e.getMessage()); // In lỗi ra NetBeans
+            System.out.println("🚨 LỖI INSERT DATABASE: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
     public boolean updateUserByAdmin(User u) {
-        String sql = "UPDATE Users SET full_name = ?, email = ?, role_id = ? WHERE id = ?";
+        String role = (u.getRoleId() == 1) ? "ADMIN" : "TEACHER";
+        String sql = "UPDATE Users SET full_name = ?, role = ? WHERE id = ?";
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, u.getFullName());
-            ps.setString(2, u.getEmail());
-            ps.setInt(3, u.getRoleId());
-            ps.setInt(4, u.getId());
+            ps.setString(2, role);
+            ps.setInt(3, u.getId());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             System.out.println("🚨 LỖI UPDATE DATABASE: " + e.getMessage());

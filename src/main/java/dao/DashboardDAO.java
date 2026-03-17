@@ -16,7 +16,7 @@ public class DashboardDAO {
         String sqlStudents = "SELECT COUNT(*) FROM Students";
         String sqlClasses = "SELECT COUNT(*) FROM Classes";
         String sqlSubjects = "SELECT COUNT(*) FROM Subjects";
-        String sqlTeachers = "SELECT COUNT(*) FROM Users WHERE role_id=2";
+        String sqlTeachers = "SELECT COUNT(*) FROM Users WHERE role='TEACHER'";
 
         try (Connection conn = DBContext.getConnection()) {
             stats.put("students", getCount(conn, sqlStudents));

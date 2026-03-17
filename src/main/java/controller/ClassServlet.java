@@ -15,7 +15,7 @@ public class ClassServlet extends HttpServlet {
     private void loadDropdownData(HttpServletRequest request) {
         request.setAttribute("subjects", classDAO.getDropdownData("SELECT id, subject_name FROM Subjects", "id", "subject_name"));
         request.setAttribute("semesters", classDAO.getDropdownData("SELECT id, semester_name FROM Semesters", "id", "semester_name"));
-        request.setAttribute("teachers", classDAO.getDropdownData("SELECT id, full_name FROM Users WHERE role_id = 2", "id", "full_name"));
+        request.setAttribute("teachers", classDAO.getDropdownData("SELECT id, full_name FROM Users WHERE role = 'TEACHER'", "id", "full_name"));
     }
 
     @Override

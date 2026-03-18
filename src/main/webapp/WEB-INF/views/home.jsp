@@ -96,8 +96,9 @@
             <c:if test="${sessionScope.LOGIN_USER.roleId == 2}">
                 <div class="row mt-4">
                     <div class="col-md-8 offset-md-2 text-center">
-                        <img src="https://cdni.iconscout.com/illustration/premium/thumb/teacher-teaching-student-in-classroom-4402133-3665518.png" 
-                             alt="Welcome Teacher" class="img-fluid mb-4" style="max-height: 250px;">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 40px; margin-bottom: 20px;">
+                            <i class="bi bi-mortarboard-fill" style="font-size: 5rem; color: white; opacity: 0.9;"></i>
+                        </div>
                         <h4 class="text-primary mb-3">Sẵn sàng cho một ngày giảng dạy hiệu quả!</h4>
                         <p class="text-muted mb-4">Hệ thống đã cập nhật danh sách lớp và sinh viên mới nhất. Thầy/Cô có thể bắt đầu quản lý điểm số và xem báo cáo ngay.</p>
                         

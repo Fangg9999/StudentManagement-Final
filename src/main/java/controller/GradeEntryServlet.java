@@ -1,5 +1,6 @@
 package controller;
 
+import dao.ClassDAO;
 import dao.GradeDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -12,6 +13,7 @@ import java.util.Map;
 public class GradeEntryServlet extends HttpServlet {
 
     private GradeDAO gradeDAO = new GradeDAO();
+    private ClassDAO classDAO = new ClassDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -21,7 +23,11 @@ public class GradeEntryServlet extends HttpServlet {
         int classId = Integer.parseInt(request.getParameter("classId"));
         int subjectId = Integer.parseInt(request.getParameter("subjectId"));
 
-        List<Map<String, Object>> studentList = gradeDAO.getStudentsAndGrades(classId, subjectId);
+        System.out.println("[DEBUG] GradeEntryServlet - classId=" + classId + ", subjectId=" + subjectId);
+        
+        // Sử dụng ClassDAO thay vì GradeDAO vì nó đã hoạt động tốt
+        List<Map<String, Object>> studentList = classDAO.getStudentsInClass(classId);
+        System.out.println("[DEBUG] GradeEntryServlet - studentList size=" + studentList.size());
         
         request.setAttribute("studentList", studentList);
         request.setAttribute("classId", classId);
@@ -41,7 +47,8 @@ public class GradeEntryServlet extends HttpServlet {
         String[] studentIds = request.getParameterValues("studentIds");
         String[] scores = request.getParameterValues("scores");
 
-        boolean success = gradeDAO.saveGradesBatch(subjectId, studentIds, scores);
+        System.out.println("[DEBUG] GradeEntryServlet POST - classId=" + classId + ", saving grades");
+        boolean success = gradeDAO.saveGradesBatch(classId, studentIds, scores);
 
         if (success) {
             response.sendRedirect(request.getContextPath() + "/teacher/grades/entry?classId=" + classId + "&subjectId=" + subjectId + "&msg=success");

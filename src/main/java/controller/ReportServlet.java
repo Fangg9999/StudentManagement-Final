@@ -1,6 +1,7 @@
 package controller;
 
 import dao.ReportDAO;
+import model.User;
 import util.GradingUtil;
 
 import jakarta.servlet.ServletException;
@@ -18,6 +19,16 @@ public class ReportServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        // Lấy thông tin user từ session
+        HttpSession session = request.getSession(false);
+        User currentUser = (User) session.getAttribute("LOGIN_USER");
+        
+        // Kiểm tra phân quyền: chỉ giáo viên mới được phép
+        if (currentUser == null || currentUser.getRoleId() != 2) {
+            response.sendRedirect(request.getContextPath() + "/home?error=access_denied");
+            return;
+        }
 
         List<Map<String, Object>> gpaList = reportDAO.getStudentGPAList();
 

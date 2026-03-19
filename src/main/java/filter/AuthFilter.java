@@ -49,6 +49,13 @@ public class AuthFilter implements Filter {
             return;
         }
 
+        // Nếu URL bắt đầu bằng /teacher/ mà user không phải Giáo viên (roleId != 2) => Chặn
+        if (currentURI.startsWith(contextPath + "/teacher/") && currentUser.getRoleId() != 2) {
+            // Đẩy về trang home kèm thông báo lỗi
+            res.sendRedirect(contextPath + "/home?error=access_denied");
+            return;
+        }
+
         // Hợp lệ, cho phép đi tiếp tới Controller
         chain.doFilter(request, response);
     }

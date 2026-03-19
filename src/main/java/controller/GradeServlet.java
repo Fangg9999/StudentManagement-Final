@@ -21,6 +21,13 @@ public class GradeServlet extends HttpServlet {
         // Lấy thông tin user từ session
         HttpSession session = request.getSession(false);
         User currentUser = (User) session.getAttribute("LOGIN_USER");
+        
+        // Kiểm tra phân quyền: chỉ giáo viên mới được phép
+        if (currentUser == null || currentUser.getRoleId() != 2) {
+            response.sendRedirect(request.getContextPath() + "/home?error=access_denied");
+            return;
+        }
+        
         int teacherId = currentUser.getId();
 
         // Lấy danh sách các lớp mà giáo viên này dạy

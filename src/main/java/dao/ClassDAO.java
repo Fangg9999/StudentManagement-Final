@@ -32,7 +32,9 @@ public class ClassDAO {
         String insertClassSql = "INSERT INTO Class_Student (class_id, student_id) VALUES (?, ?)";
         String insertGradeSql = "INSERT INTO Grades (student_id, class_id, score) VALUES (?, ?, NULL)";
 
-        try (Connection conn = DBContext.getConnection()) {
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
             // Bước 1: Tìm ID sinh viên
             int studentId = getStudentIdByCode(studentCode, conn);
             if (studentId == -1) {
@@ -51,7 +53,8 @@ public class ClassDAO {
 
             // Bước 3: TRANSACTION - Đảm bảo dữ liệu đồng nhất
             conn.setAutoCommit(false);
-            try (PreparedStatement psClass = conn.prepareStatement(insertClassSql); PreparedStatement psGrade = conn.prepareStatement(insertGradeSql)) {
+            try (PreparedStatement psClass = conn.prepareStatement(insertClassSql); 
+                 PreparedStatement psGrade = conn.prepareStatement(insertGradeSql)) {
 
                 // Nhét vào lớp
                 psClass.setInt(1, classId);
@@ -65,14 +68,29 @@ public class ClassDAO {
 
                 conn.commit(); // Chốt giao dịch thành công!
                 return "success";
-            } catch (Exception e) {
-                conn.rollback(); // Lỗi thì quay xe
-                e.printStackTrace();
+            } catch (SQLException sqle) {
+                try {
+                    conn.rollback(); // Lỗi thì quay xe
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+                System.err.println("SQL Error adding student " + studentCode + " to class " + classId + ": " + sqle.getMessage());
+                sqle.printStackTrace();
                 return "error";
             }
         } catch (Exception e) {
+            System.err.println("Error in addStudentToClass for student " + studentCode + ": " + e.getMessage());
             e.printStackTrace();
             return "error";
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -84,7 +102,9 @@ public class ClassDAO {
         String deleteGradeSql = "DELETE FROM Grades WHERE class_id = ? AND student_id = ?";
         String deleteClassSql = "DELETE FROM Class_Student WHERE class_id = ? AND student_id = ?";
 
-        try (Connection conn = DBContext.getConnection()) {
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
             // Bước 1: Kiểm tra xem Giáo viên đã chấm điểm chưa
             try (PreparedStatement psCheck = conn.prepareStatement(checkGradeSql)) {
                 psCheck.setInt(1, classId);
@@ -101,7 +121,8 @@ public class ClassDAO {
 
             // Bước 2: An toàn để xóa -> Tiến hành TRANSACTION
             conn.setAutoCommit(false);
-            try (PreparedStatement psDelGrade = conn.prepareStatement(deleteGradeSql); PreparedStatement psDelClass = conn.prepareStatement(deleteClassSql)) {
+            try (PreparedStatement psDelGrade = conn.prepareStatement(deleteGradeSql); 
+                 PreparedStatement psDelClass = conn.prepareStatement(deleteClassSql)) {
 
                 psDelGrade.setInt(1, classId);
                 psDelGrade.setInt(2, studentId);
@@ -113,14 +134,29 @@ public class ClassDAO {
 
                 conn.commit();
                 return "success";
-            } catch (Exception e) {
-                conn.rollback();
-                e.printStackTrace();
+            } catch (SQLException sqle) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+                System.err.println("SQL Error removing student " + studentId + " from class " + classId + ": " + sqle.getMessage());
+                sqle.printStackTrace();
                 return "error";
             }
         } catch (Exception e) {
+            System.err.println("Error in removeStudentFromClass for student " + studentId + ": " + e.getMessage());
             e.printStackTrace();
             return "error";
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

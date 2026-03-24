@@ -38,6 +38,9 @@
             <c:if test="${param.error == 'empty'}">
                 <div class="alert alert-warning">Vui lòng nhập Mã Sinh Viên!</div>
             </c:if>
+            <c:if test="${param.error == 'db_error'}">
+                <div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Lỗi: Không thể thêm sinh viên vào lớp. Vui lòng kiểm tra kết nối cơ sở dữ liệu hoặc liên hệ quản trị viên.</div>
+            </c:if>
 
             <div class="row">
                 <div class="col-md-4 mb-4">
